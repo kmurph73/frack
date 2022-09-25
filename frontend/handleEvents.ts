@@ -1,8 +1,7 @@
 import { attemptComputerMove } from "./attemptComputerMove.js";
 import { dom } from "./domElements.js";
-import { drawMoves } from "./drawMoves.js";
 import { globals, state } from "./globals.js";
-import { Move, Piece, Square } from "./lib/chess.js";
+import { Move, Piece } from "./lib/chess.js";
 import { rerender } from "./main.js";
 import { saveState } from "./localStorage.js";
 import { goFish } from "./stockfish.js";
@@ -80,12 +79,13 @@ const mouseup = (e: MouseEvent) => {
   }
 
   if (mv) {
+    if (mv) {
+      state.moves.push(mv);
+    }
     saveState();
 
     const result = attemptComputerMove();
     if (result) {
-      drawMoves();
-
       setTimeout(() => {
         if (game.isCheckmate()) {
           alert("GG");
@@ -111,6 +111,7 @@ const mousemove = (e: MouseEvent) => {
 };
 
 const newGame = () => {
+  state.moves = [];
   globals.game!.reset();
   saveState();
   rerender();
@@ -129,8 +130,13 @@ export const attachEvents = () => {
 
   const undoBtn = document.getElementById("undo") as HTMLButtonElement;
   undoBtn.addEventListener("click", () => {
-    globals.game!.undo();
-    rerender();
+    const mv = globals.game!.undo();
+    if (mv) {
+      state.moves.pop();
+      rerender();
+    } else {
+      alert("couldnt undo");
+    }
   });
 
   const fishBtn = document.getElementById("fish") as HTMLButtonElement;
@@ -153,4 +159,18 @@ export const attachEvents = () => {
     state.playerColor = state.playerColor === "b" ? "w" : "b";
     playasBtn.innerText = getTxt();
   });
+
+  const startBtn = document.getElementById("start") as HTMLButtonElement;
+  startBtn.addEventListener("click", () => {
+    startGame();
+  });
+
+  const startGame = () => {
+    state.playing = !state.playing;
+    const txt = state.playing ? "stop" : "start";
+    startBtn.innerText = txt;
+    attemptComputerMove();
+    saveState();
+    rerender();
+  };
 };

@@ -18,13 +18,6 @@ export const sizePx = 600;
 export const squareSize = sizePx / 8;
 export const halfSquare = squareSize / 2;
 
-type Rgba = { r: number; g: number; b: number; a?: number };
-
-export const darkColor: Rgba = { r: 119, g: 153, b: 82 };
-export const lightColor: Rgba = { r: 237, g: 238, b: 209 };
-export const opaqueGray: Rgba = { r: 49, g: 46, b: 43, a: 125 };
-export const lichessTan: Rgba = { r: 240, g: 217, b: 181 };
-
 export const rgbToString = ({ r, g, b, a }: Rgba): string => {
   if (a == null) {
     return `rgb(${r}, ${g}, ${b})`;
@@ -33,13 +26,25 @@ export const rgbToString = ({ r, g, b, a }: Rgba): string => {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 };
 
+type Rgba = { r: number; g: number; b: number; a?: number };
+
+export const darkColor: Rgba = { r: 119, g: 153, b: 82 };
+export const lightColor: Rgba = { r: 237, g: 238, b: 209 };
+export const opaqueGray: Rgba = { r: 49, g: 46, b: 43, a: 0.5 };
+export const lichessTan: Rgba = { r: 240, g: 217, b: 181 };
+export const neonGreen: Rgba = { r: 58, g: 216, b: 32 };
+export const opaqueNeonGreen: Rgba = { ...neonGreen, a: 0.5 };
+export const neonGreenStr = rgbToString(neonGreen);
+export const opaqueNeonGreenStr = rgbToString(opaqueNeonGreen);
+
 type State = {
   selectedSquare: Square | null;
   mousedown: boolean;
   flipped: boolean;
   mousePos: Point | null;
   playerColor: Color;
-  moves: Move[];
+  moves: Array<Move | "O-O" | "O-O-O">;
+  playing: boolean;
 };
 
 type Globals = {
@@ -57,6 +62,7 @@ export const state: State = {
   mousePos: null,
   playerColor: "b",
   moves: [],
+  playing: false,
 };
 
 export const globals: Globals = {

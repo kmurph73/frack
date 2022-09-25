@@ -112,7 +112,7 @@ wss.on("connection", function (ws) {
     };
 
     if (json.fen) {
-      const cmd = `position fen ${json.fen}${EOL}go movetime 4000${EOL}`;
+      const cmd = `position fen ${json.fen}${EOL}go movetime 3000${EOL}`;
       stockfish!.stdin.write(cmd);
     }
     // console.log(event.data);

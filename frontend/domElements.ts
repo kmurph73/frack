@@ -4,6 +4,8 @@ export type DomElements = {
   canvasContext: CanvasRenderingContext2D | null;
   sidebar: HTMLDivElement | null;
   msgbox: HTMLDivElement | null;
+  info: HTMLDivElement | null;
+  turns: HTMLDivElement | null;
 };
 
 export const dom: DomElements = {
@@ -12,4 +14,6 @@ export const dom: DomElements = {
   canvasContext: null,
   sidebar: null,
   msgbox: null,
+  info: null,
+  turns: null,
 };

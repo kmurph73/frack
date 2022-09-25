@@ -76,6 +76,7 @@ export const fileAndRankToPos = ({ rank, file }: FileAndRank): Point => {
 
   if (state.flipped) {
     x = Math.abs(7 - x);
+  } else {
     y = Math.abs(7 - y);
   }
 

@@ -18,6 +18,10 @@ const checkIfCastling = (
 };
 
 export const attemptComputerMove = (): Move | null => {
+  if (!state.playing) {
+    return null;
+  }
+
   const game = globals.game!;
   if (game.turn() === state.playerColor) {
     return null;
@@ -33,13 +37,15 @@ export const attemptComputerMove = (): Move | null => {
 
   const [from, to] = mv.split(",");
 
-  let result = game.move({ from, to });
-  if (result != null) {
-    return result;
+  let move = game.move({ from, to });
+  if (move != null) {
+    state.moves.push(move);
+    return move;
   }
 
   const castle = checkIfCastling({ from, to }, game.turn());
   if (castle) {
+    state.moves.push(castle);
     return game.move(castle);
   }
 

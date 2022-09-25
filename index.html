@@ -13,19 +13,23 @@
     ></script>
   </head>
   <body>
-    <div class="d-flex">
+    <div class="d-flex" style="margin-left: 20px">
       <div>
         <div id="canvashold"></div>
         <div>
           <button id="flip">flip</button>
           <button id="undo">undo</button>
           <button id="fish">fish</button>
-          <button id="new">new</button>
+          <button id="new">reset</button>
           <button id="playas"></button>
+          <button id="start">start</button>
         </div>
         <div id="msgbox"></div>
       </div>
-      <div id="sidebar" class="wrap p-1"></div>
+      <div id="sidebar" class="wrap p-1">
+        <div id="info">turn:</div>
+        <div id="turns"></div>
+      </div>
     </div>
 
     <script>

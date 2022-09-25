@@ -22,5 +22,7 @@ export const drawMoves = () => {
     );
   }
 
-  dom.sidebar!.innerHTML = html.join("");
+  dom.turns!.innerHTML = html.join("");
+  const color = g.turn() === "b" ? "black" : "white";
+  dom.info!.innerHTML = `<span class="${color}">${color}'s turn</span>`;
 };

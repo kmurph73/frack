@@ -3,17 +3,56 @@ import {
   alphabet,
   darkColor,
   lightColor,
+  neonGreen,
+  neonGreenStr,
+  opaqueNeonGreenStr,
   rgbToString,
   squareSize,
   state,
 } from "./globals.js";
-import { ChessFile } from "./types.js";
+import { ChessFile, Point } from "./types.js";
 import { fileAndRankToPos, then } from "./util.js";
 
 type Thing = {
   colorType: "dark" | "light";
   file: ChessFile;
   rank: number;
+};
+
+const drawSquare = ({ x, y }: Point, color: string) => {
+  const ctx = dom.canvasContext!;
+
+  let xOffset = x * squareSize;
+  let yOffset = y * squareSize;
+
+  ctx.fillStyle = color;
+  ctx.fillRect(xOffset, yOffset, squareSize, squareSize);
+};
+
+console.log(opaqueNeonGreenStr);
+
+export const drawLastMove = () => {
+  const lastMove = state.moves.at(-1);
+  if (lastMove && typeof lastMove !== "string") {
+    const { from, to } = lastMove;
+    let [file, rank] = from.split("");
+
+    let pos = fileAndRankToPos({
+      rank: parseInt(rank),
+      file: file as ChessFile,
+    });
+
+    drawSquare(pos, neonGreenStr);
+
+    [file, rank] = to.split("");
+
+    pos = fileAndRankToPos({
+      rank: parseInt(rank),
+      file: file as ChessFile,
+    });
+
+    drawSquare(pos, opaqueNeonGreenStr);
+  }
 };
 
 export const drawBoard = () => {

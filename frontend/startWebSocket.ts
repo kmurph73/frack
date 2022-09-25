@@ -6,7 +6,7 @@ const parseSf = (msg: string) => {
   const parts = msg.split(" ");
   console.log(parts);
   const depth = parts[2];
-  const score = parts[9];
+  let score = "?";
   let best: string | null = null;
   let ponder: string | null = null;
 
@@ -18,10 +18,16 @@ const parseSf = (msg: string) => {
     } else if (/bestmove$/.test(part)) {
       best = parts[index + 1];
       ponder = parts[index + 3].trim();
+    } else if (part === "cp") {
+      score = parts[index + 1];
     }
   }
 
   // ponder = ponder ? ponder.trim() : ponder;
+
+  if (best) {
+    best = best.split("\n")[0];
+  }
 
   return { depth, score, best, ponder };
 };
