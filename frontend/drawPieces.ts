@@ -1,9 +1,35 @@
 import { dom } from "./domElements.js";
 import { getAtlasCoords } from "./getAtlasCoords.js";
 import { halfSquare, squareSize, state } from "./globals.js";
-import { Chess, getFile, getRank, Move, Square, SQUARES } from "./lib/chess.js";
+import {
+  Chess,
+  Color,
+  getFile,
+  getRank,
+  Move,
+  Square,
+  SQUARES,
+} from "./lib/chess.js";
 import { Point } from "./types.js";
 import { flipRank, mapCompact, posFromSquare, squareFromPos } from "./util.js";
+
+const getCastleMoves = (color: Color, castle: string): Square | null => {
+  if (castle === "O-O") {
+    if (color === "b") {
+      return "g8";
+    } else {
+      return "g1";
+    }
+  } else if (castle === "O-O-O") {
+    if (color === "b") {
+      return "c8";
+    } else {
+      return "c1";
+    }
+  }
+
+  return null;
+};
 
 export const drawPieces = (img: HTMLImageElement, chess: Chess) => {
   let board = chess.board();
@@ -63,6 +89,10 @@ export const drawPieces = (img: HTMLImageElement, chess: Chess) => {
 
         const moves = chess.moves({ square });
 
+        if (moves.length) {
+          // debugger;
+        }
+
         for (let index = 0; index < moves.length; index++) {
           let move = moves[index]!;
 
@@ -70,11 +100,18 @@ export const drawPieces = (img: HTMLImageElement, chess: Chess) => {
             continue;
           }
 
-          if (/=/.test(move)) {
-            move = move.split("=")[0];
-          } else {
-            move = move.replace("+", "").slice(-2);
-          }
+          move = (() => {
+            const castle = getCastleMoves(chess.turn(), move);
+            if (castle) {
+              return castle;
+            }
+
+            if (/=/.test(move)) {
+              return move.split("=")[0];
+            } else {
+              return move.replace("+", "").slice(-2);
+            }
+          })();
 
           let { x, y } = posFromSquare(move as Square);
           if (state.flipped) {

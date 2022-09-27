@@ -15,7 +15,7 @@ import { loadState } from "./localStorage.js";
 const moves: string[] = [];
 window.App = { state, globals, moves };
 
-export const rerender = () => {
+export const render = () => {
   const g = globals.game!;
   drawBoard();
   drawLastMove();
@@ -62,6 +62,7 @@ const main = async () => {
 
   buildCanvas();
   drawBoard();
+  drawLastMove();
   drawMoves();
 
   const imgAtlas = new Image();

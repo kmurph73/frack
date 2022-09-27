@@ -2,6 +2,7 @@ import { dom } from "./domElements.js";
 import {
   alphabet,
   darkColor,
+  globals,
   lightColor,
   neonGreen,
   neonGreenStr,
@@ -10,7 +11,8 @@ import {
   squareSize,
   state,
 } from "./globals.js";
-import { ChessFile, Point } from "./types.js";
+import { Color, Square } from "./lib/chess.js";
+import { ChessFile, FileAndRank, Point } from "./types.js";
 import { fileAndRankToPos, then } from "./util.js";
 
 type Thing = {
@@ -29,30 +31,53 @@ const drawSquare = ({ x, y }: Point, color: string) => {
   ctx.fillRect(xOffset, yOffset, squareSize, squareSize);
 };
 
-console.log(opaqueNeonGreenStr);
+const getSquareColor = ({ file, rank }: FileAndRank): Color => {
+  const fileNum = alphabet.indexOf(file);
+  const rankNum = rank - 1;
+  const rankEven = rankNum % 2 === 0;
+  const fileEven = fileNum % 2 === 0;
+
+  if ((rankEven && fileEven) || (!rankEven && !fileEven)) {
+    return "b";
+  } else {
+    return "w";
+  }
+};
 
 export const drawLastMove = () => {
   const lastMove = state.moves.at(-1);
-  if (lastMove && typeof lastMove !== "string") {
-    const { from, to } = lastMove;
-    let [file, rank] = from.split("");
-
-    let pos = fileAndRankToPos({
-      rank: parseInt(rank),
-      file: file as ChessFile,
-    });
-
-    drawSquare(pos, neonGreenStr);
-
-    [file, rank] = to.split("");
-
-    pos = fileAndRankToPos({
-      rank: parseInt(rank),
-      file: file as ChessFile,
-    });
-
-    drawSquare(pos, opaqueNeonGreenStr);
+  if (lastMove == null || lastMove === "O-O" || lastMove === "O-O-O") {
+    return;
   }
+
+  const { from, to } = lastMove;
+  let [file, rankStr] = from.split("");
+
+  let rank = parseInt(rankStr);
+
+  let color = getSquareColor({ file: file as ChessFile, rank });
+  let squareColor = color === "b" ? neonGreenStr : opaqueNeonGreenStr;
+
+  let pos = fileAndRankToPos({
+    rank,
+    file: file as ChessFile,
+  });
+
+  drawSquare(pos, squareColor);
+
+  [file, rankStr] = to.split("");
+
+  rank = parseInt(rankStr);
+
+  color = getSquareColor({ file: file as ChessFile, rank });
+  squareColor = color === "b" ? neonGreenStr : opaqueNeonGreenStr;
+
+  pos = fileAndRankToPos({
+    rank,
+    file: file as ChessFile,
+  });
+
+  drawSquare(pos, opaqueNeonGreenStr);
 };
 
 export const drawBoard = () => {

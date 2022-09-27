@@ -109,10 +109,25 @@ wss.on("connection", function (ws) {
   ws.onmessage = (event) => {
     const json = JSON.parse(event.data as string) as {
       fen: string | undefined;
+      skill: number | undefined;
+      depth: number | undefined;
+      automove: boolean;
     };
 
     if (json.fen) {
-      const cmd = `position fen ${json.fen}${EOL}go movetime 3000${EOL}`;
+      let cmd = "";
+      if (json.skill) {
+        cmd += `setoption name Skill Level value ${json.skill}${EOL}`;
+        stockfish!.stdin.write(cmd);
+      }
+
+      cmd += `position fen ${json.fen}${EOL}`;
+      if (json.depth) {
+        cmd += `go depth ${json.depth}${EOL}`;
+      } else {
+        cmd += `go movetime 3000${EOL}`;
+      }
+
       stockfish!.stdin.write(cmd);
     }
     // console.log(event.data);

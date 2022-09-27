@@ -2,7 +2,7 @@ import { attemptComputerMove } from "./attemptComputerMove.js";
 import { dom } from "./domElements.js";
 import { globals, state } from "./globals.js";
 import { Move, Piece } from "./lib/chess.js";
-import { rerender } from "./main.js";
+import { render } from "./main.js";
 import { saveState } from "./localStorage.js";
 import { goFish } from "./stockfish.js";
 import { FileAndRank } from "./types.js";
@@ -11,6 +11,7 @@ import {
   chessPosFromPoint,
   squareFromPos,
   isWithinCanvas,
+  attemptMove,
 } from "./util.js";
 
 const mousedown = (e: MouseEvent) => {
@@ -28,7 +29,7 @@ const mousedown = (e: MouseEvent) => {
   state.mousePos = pos;
   const square = squareFromPos(chessPos);
   state.selectedSquare = square;
-  rerender();
+  render();
 };
 
 const isPromotionAttempt = (
@@ -79,9 +80,7 @@ const mouseup = (e: MouseEvent) => {
   }
 
   if (mv) {
-    if (mv) {
-      state.moves.push(mv);
-    }
+    state.moves.push(mv);
     saveState();
 
     const result = attemptComputerMove();
@@ -95,7 +94,7 @@ const mouseup = (e: MouseEvent) => {
   }
 
   state.selectedSquare = null;
-  rerender();
+  render();
 };
 
 const mousemove = (e: MouseEvent) => {
@@ -106,7 +105,20 @@ const mousemove = (e: MouseEvent) => {
   if (state.selectedSquare && state.mousedown) {
     const pos = getCursorPosition(dom.canvas!, e);
     state.mousePos = pos;
-    rerender();
+    render();
+  }
+};
+
+const clickBox = (e: MouseEvent) => {
+  e.preventDefault();
+  if (!e.target) {
+    return;
+  }
+
+  const target = e.target as HTMLElement;
+  if (target.getAttribute("id") === "domove") {
+    const move = target.innerText.trim();
+    attemptMove(move);
   }
 };
 
@@ -114,7 +126,7 @@ const newGame = () => {
   state.moves = [];
   globals.game!.reset();
   saveState();
-  rerender();
+  render();
 };
 
 export const attachEvents = () => {
@@ -122,10 +134,20 @@ export const attachEvents = () => {
   document.body.addEventListener("mouseup", mouseup);
   document.body.addEventListener("mousemove", mousemove);
 
+  const msgbox = document.getElementById("msgbox") as HTMLDivElement;
+  msgbox.addEventListener("click", clickBox);
+
+  const selectOppo = document.getElementById("oppo") as HTMLSelectElement;
+  selectOppo.addEventListener("change", (e) => {
+    state.opponent = selectOppo.value;
+    saveState();
+  });
+  selectOppo.value = state.opponent;
+
   const flipBtn = document.getElementById("flip") as HTMLButtonElement;
   flipBtn.addEventListener("click", () => {
     state.flipped = !state.flipped;
-    rerender();
+    render();
   });
 
   const undoBtn = document.getElementById("undo") as HTMLButtonElement;
@@ -133,7 +155,7 @@ export const attachEvents = () => {
     const mv = globals.game!.undo();
     if (mv) {
       state.moves.pop();
-      rerender();
+      render();
     } else {
       alert("couldnt undo");
     }
@@ -171,6 +193,6 @@ export const attachEvents = () => {
     startBtn.innerText = txt;
     attemptComputerMove();
     saveState();
-    rerender();
+    render();
   };
 };

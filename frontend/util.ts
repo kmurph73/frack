@@ -1,5 +1,12 @@
-import { alphabet, squareSize, state } from "./globals.js";
+import {
+  alphabet,
+  globals,
+  skillLevels,
+  squareSize,
+  state,
+} from "./globals.js";
 import { Color, Square } from "./lib/chess.js";
+import { render } from "./main.js";
 import { ChessFile, FileAndRank, Point } from "./types";
 
 export const flipRank = (rank: number) => {
@@ -106,4 +113,22 @@ export const mapCompact = <A, B>(arr: A[], cb: (t: A) => B | null): B[] => {
   }
 
   return b;
+};
+
+export const getStockfishConf = () => {
+  if (/^sf/.test(state.opponent)) {
+    return skillLevels[state.opponent];
+  }
+
+  return null;
+};
+
+export const attemptMove = (move: string) => {
+  const from = move.slice(0, 2);
+  const to = move.slice(2, 4);
+  const result = globals.game!.move({ to, from });
+  if (result) {
+    state.moves.push(result);
+    render();
+  }
 };

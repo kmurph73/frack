@@ -1,6 +1,12 @@
-import { globals } from "./globals.js";
+import { globals, skillLevels, state } from "./globals.js";
 
 export const goFish = () => {
-  const data = { fen: globals.game!.fen() };
-  globals.websocket!.send(JSON.stringify(data));
+  if (globals.game!.turn() === state.playerColor) {
+    const data = { fen: globals.game!.fen(), level: 20 };
+    globals.websocket!.send(JSON.stringify(data));
+  } else {
+    const { level, depth } = skillLevels[state.opponent];
+    const data = { fen: globals.game!.fen(), level, depth };
+    globals.websocket!.send(JSON.stringify(data));
+  }
 };

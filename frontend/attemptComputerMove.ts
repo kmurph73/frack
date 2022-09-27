@@ -1,7 +1,8 @@
 import { get_move } from "../pkg/frack.js";
-import { globals, state } from "./globals.js";
+import { globals, isPlayerTurn, state } from "./globals.js";
 import { Move } from "./lib/chess.js";
 import { saveState } from "./localStorage.js";
+import { goFish } from "./stockfish.js";
 
 // e1,a1
 const checkIfCastling = (
@@ -27,6 +28,11 @@ export const attemptComputerMove = (): Move | null => {
     return null;
   }
 
+  if (/^sf/.test(state.opponent)) {
+    goFish();
+    return null;
+  }
+
   const rng = globals.rng!;
 
   const mv = get_move(rng, game.fen());
@@ -45,8 +51,10 @@ export const attemptComputerMove = (): Move | null => {
 
   const castle = checkIfCastling({ from, to }, game.turn());
   if (castle) {
-    state.moves.push(castle);
-    return game.move(castle);
+    const result = game.move(castle);
+    if (result) {
+      state.moves.push(result);
+    }
   }
 
   saveState();

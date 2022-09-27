@@ -6,6 +6,7 @@ type LocalState = {
   flipped: boolean;
   pgn: string;
   moves: Array<Move | "O-O" | "O-O-O">;
+  oppo: string | undefined;
 };
 
 export const saveState = () => {
@@ -16,6 +17,7 @@ export const saveState = () => {
     flipped: state.flipped,
     pgn,
     moves,
+    oppo: state.opponent,
   };
 
   localStorage.setItem("state", JSON.stringify(s));
@@ -27,10 +29,13 @@ export const loadState = () => {
     return;
   }
 
-  const { playerColor, flipped, pgn, moves } = JSON.parse(str) as LocalState;
+  const { playerColor, flipped, pgn, moves, oppo } = JSON.parse(
+    str
+  ) as LocalState;
 
   state.moves = moves || [];
   state.playerColor = playerColor;
   state.flipped = flipped;
+  state.opponent = oppo || "gf";
   globals.game!.loadPgn(pgn);
 };

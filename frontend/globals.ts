@@ -32,10 +32,21 @@ export const darkColor: Rgba = { r: 119, g: 153, b: 82 };
 export const lightColor: Rgba = { r: 237, g: 238, b: 209 };
 export const opaqueGray: Rgba = { r: 49, g: 46, b: 43, a: 0.5 };
 export const lichessTan: Rgba = { r: 240, g: 217, b: 181 };
-export const neonGreen: Rgba = { r: 58, g: 216, b: 32 };
+export const neonGreen: Rgba = { r: 0, g: 250, b: 50 };
 export const opaqueNeonGreen: Rgba = { ...neonGreen, a: 0.5 };
 export const neonGreenStr = rgbToString(neonGreen);
 export const opaqueNeonGreenStr = rgbToString(opaqueNeonGreen);
+
+export const skillLevels: Record<string, { level: number; depth: number }> = {
+  sf1: { level: -9, depth: 5 },
+  sf2: { level: -5, depth: 5 },
+  sf3: { level: -1, depth: 5 },
+  sf4: { level: 3, depth: 5 },
+  sf5: { level: 7, depth: 5 },
+  sf6: { level: 11, depth: 8 },
+  sf7: { level: 16, depth: 13 },
+  sf8: { level: 20, depth: 22 },
+};
 
 type State = {
   selectedSquare: Square | null;
@@ -45,6 +56,7 @@ type State = {
   playerColor: Color;
   moves: Array<Move | "O-O" | "O-O-O">;
   playing: boolean;
+  opponent: string;
 };
 
 type Globals = {
@@ -63,6 +75,7 @@ export const state: State = {
   playerColor: "b",
   moves: [],
   playing: false,
+  opponent: "glowfish",
 };
 
 export const globals: Globals = {
@@ -71,4 +84,8 @@ export const globals: Globals = {
   rng: null,
   pgns: null,
   websocket: null,
+};
+
+export const isPlayerTurn = (): boolean => {
+  return state.playerColor === globals.game!.turn();
 };
