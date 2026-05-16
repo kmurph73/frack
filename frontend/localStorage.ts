@@ -1,5 +1,5 @@
 import { globals, state } from "./globals.js";
-import { Color, Move } from "./lib/chess.js";
+import { Color, Move } from "chess.js";
 
 type LocalState = {
   playerColor: Color;

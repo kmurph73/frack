@@ -5,7 +5,7 @@ import {
   squareSize,
   state,
 } from "./globals.js";
-import { Color, Square } from "./lib/chess.js";
+import { Color, Square } from "chess.js";
 import { render } from "./main.js";
 import { ChessFile, FileAndRank, Point } from "./types";
 

@@ -33,51 +33,62 @@ const server = http.createServer(async function (req, res) {
     return;
   }
 
-  if (req.url === "/") {
-    const txt = await readFile("index.html", "utf-8");
-    res.setHeader("Content-Type", "text/html; charset=UTF-8");
-    res.write(txt);
-    res.end();
-  } else if (/frack\.js$/.test(req.url)) {
-    const js = await readFile(cwd + "/pkg/frack.js", "utf-8");
-    res.setHeader("Content-Type", "application/javascript");
-    res.write(js);
-    res.end();
-  } else if (/\.js$/.test(req.url)) {
-    const js = await readFile(cwd + req.url, "utf-8");
-    res.setHeader("Content-Type", "application/javascript");
-    res.write(js);
-    res.end();
-  } else if (/\.map$/.test(req.url)) {
-    const json = await readFile(cwd + req.url, "utf-8");
-    res.setHeader("Content-Type", "application/json");
-    res.write(json);
-    res.end();
-  } else if (/\.wasm$/.test(req.url)) {
-    const filename = req.url.split("/").at(-1);
-    const wasm = await readFile(cwd + "/pkg/" + filename);
-    res.setHeader("Content-Type", "application/wasm");
-    res.write(wasm);
-    res.end();
-  } else if (/\.ts$/.test(req.url)) {
-    const ts = await readFile(cwd + req.url, "utf-8");
-    // res.setHeader("Content-Type", "application/json");
-    res.write(ts);
-    res.end();
-  } else if (/\.css$/.test(req.url)) {
-    const css = await readFile(cwd + req.url, "utf-8");
-    res.setHeader("Content-Type", "text/css");
-    res.write(css);
-    res.end();
-  } else if (/\.png$/.test(req.url)) {
-    const png = await readFile(cwd + req.url);
-    res.setHeader("Content-Type", "image/png");
-    res.write(png);
-    res.end();
-  } else {
-    const txt = await readFile(cwd + req.url, "utf-8");
-    res.setHeader("Content-Type", "text/plain; charset=UTF-8");
-    res.write(txt);
+  try {
+    if (req.url === "/") {
+      const txt = await readFile("index.html", "utf-8");
+      res.setHeader("Content-Type", "text/html; charset=UTF-8");
+      res.write(txt);
+      res.end();
+    } else if (/frack\.js$/.test(req.url)) {
+      const js = await readFile(cwd + "/pkg/frack.js", "utf-8");
+      res.setHeader("Content-Type", "application/javascript");
+      res.write(js);
+      res.end();
+    } else if (/\.js$/.test(req.url)) {
+      const js = await readFile(cwd + req.url, "utf-8");
+      res.setHeader("Content-Type", "application/javascript");
+      res.write(js);
+      res.end();
+    } else if (/\.map$/.test(req.url)) {
+      const json = await readFile(cwd + req.url, "utf-8");
+      res.setHeader("Content-Type", "application/json");
+      res.write(json);
+      res.end();
+    } else if (/\.wasm$/.test(req.url)) {
+      const filename = req.url.split("/").at(-1);
+      const wasm = await readFile(cwd + "/pkg/" + filename);
+      res.setHeader("Content-Type", "application/wasm");
+      res.write(wasm);
+      res.end();
+    } else if (/\.ts$/.test(req.url)) {
+      const ts = await readFile(cwd + req.url, "utf-8");
+      // res.setHeader("Content-Type", "application/json");
+      res.write(ts);
+      res.end();
+    } else if (/\.css$/.test(req.url)) {
+      const css = await readFile(cwd + req.url, "utf-8");
+      res.setHeader("Content-Type", "text/css");
+      res.write(css);
+      res.end();
+    } else if (/\.png$/.test(req.url)) {
+      const png = await readFile(cwd + req.url);
+      res.setHeader("Content-Type", "image/png");
+      res.write(png);
+      res.end();
+    } else {
+      const txt = await readFile(cwd + req.url, "utf-8");
+      res.setHeader("Content-Type", "text/plain; charset=UTF-8");
+      res.write(txt);
+      res.end();
+    }
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      res.statusCode = 404;
+      res.end();
+      return;
+    }
+    console.error(err);
+    res.statusCode = 500;
     res.end();
   }
 });

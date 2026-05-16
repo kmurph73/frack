@@ -11,7 +11,7 @@ import {
   squareSize,
   state,
 } from "./globals.js";
-import { Color, Square } from "./lib/chess.js";
+import { Color, Square } from "chess.js";
 import { ChessFile, FileAndRank, Point } from "./types.js";
 import { fileAndRankToPos, then } from "./util.js";
 

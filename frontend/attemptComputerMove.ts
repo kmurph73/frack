@@ -1,6 +1,6 @@
 import { get_move } from "../pkg/frack.js";
 import { globals, isPlayerTurn, state } from "./globals.js";
-import { Move } from "./lib/chess.js";
+import { Move } from "chess.js";
 import { saveState } from "./localStorage.js";
 import { goFish } from "./stockfish.js";
 
@@ -19,10 +19,6 @@ const checkIfCastling = (
 };
 
 export const attemptComputerMove = (): Move | null => {
-  if (!state.playing) {
-    return null;
-  }
-
   const game = globals.game!;
   if (game.turn() === state.playerColor) {
     return null;

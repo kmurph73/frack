@@ -1,11 +1,13 @@
 import { attemptComputerMove } from "./attemptComputerMove.js";
 import { dom } from "./domElements.js";
 import { globals, state } from "./globals.js";
-import { Move, Piece } from "./lib/chess.js";
+import { Move, Piece } from "chess.js";
 import { render } from "./main.js";
 import { saveState } from "./localStorage.js";
 import { goFish } from "./stockfish.js";
 import { FileAndRank } from "./types.js";
+import { get_rng } from "../pkg/frack.js";
+import { generateRandomBigInt } from "./lib/randomBigInt.js";
 import {
   getCursorPosition,
   chessPosFromPoint,
@@ -61,6 +63,9 @@ const mouseup = (e: MouseEvent) => {
 
   const square = squareFromPos(chessPos);
   const piece = game.get(state.selectedSquare);
+  if (!piece) {
+    return;
+  }
   const promote = isPromotionAttempt(piece, chessPos);
 
   let mv: Move | null = null;
@@ -172,27 +177,31 @@ export const attachEvents = () => {
   });
 
   const playasBtn = document.getElementById("playas") as HTMLButtonElement;
-  const getTxt = () => {
+  const refreshPlayasText = () => {
     const color = state.playerColor === "b" ? "white" : "black";
-    return `play as ${color}`;
+    playasBtn.innerText = `play as ${color}`;
   };
-  playasBtn.innerText = getTxt();
+  refreshPlayasText();
   playasBtn.addEventListener("click", () => {
     state.playerColor = state.playerColor === "b" ? "w" : "b";
-    playasBtn.innerText = getTxt();
+    refreshPlayasText();
   });
 
-  const startBtn = document.getElementById("start") as HTMLButtonElement;
-  startBtn.addEventListener("click", () => {
-    startGame();
+  const newGameBtn = document.getElementById("newgame") as HTMLButtonElement;
+  newGameBtn.addEventListener("click", () => {
+    globals.game!.reset();
+    state.moves = [];
+    state.playerColor = Math.random() < 0.5 ? "w" : "b";
+    globals.rng = generateRandomBigInt(1n, get_rng());
+    refreshPlayasText();
+    saveState();
+    render();
   });
 
-  const startGame = () => {
-    state.playing = !state.playing;
-    const txt = state.playing ? "stop" : "start";
-    startBtn.innerText = txt;
+  const nextBtn = document.getElementById("next") as HTMLButtonElement;
+  nextBtn.addEventListener("click", () => {
     attemptComputerMove();
     saveState();
     render();
-  };
+  });
 };

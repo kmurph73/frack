@@ -1,15 +1,7 @@
 import { dom } from "./domElements.js";
 import { getAtlasCoords } from "./getAtlasCoords.js";
 import { halfSquare, squareSize, state } from "./globals.js";
-import {
-  Chess,
-  Color,
-  getFile,
-  getRank,
-  Move,
-  Square,
-  SQUARES,
-} from "./lib/chess.js";
+import { Chess, Color, Move, Square, SQUARES } from "chess.js";
 import { Point } from "./types.js";
 import { flipRank, mapCompact, posFromSquare, squareFromPos } from "./util.js";
 
@@ -50,13 +42,10 @@ export const drawPieces = (img: HTMLImageElement, chess: Chess) => {
         continue;
       }
 
-      const { square, type, color, squareNum } = element;
+      const { square, type, color } = element;
 
-      // let x = square.file() as i32;
-      // let y = square.rank().flip() as i32;
-
-      let file = getFile(squareNum);
-      let rank = getRank(squareNum);
+      let file = square.charCodeAt(0) - 97;
+      let rank = 8 - parseInt(square[1]!, 10);
       // rank = flipRank(rank);
       if (state.flipped) {
         file = Math.abs(7 - file);

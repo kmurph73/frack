@@ -1,4 +1,4 @@
-import { Chess, Square, Color, Move } from "./lib/chess.js";
+import { Chess, Square, Color, Move } from "chess.js";
 import { Point } from "./types";
 
 declare global {
@@ -55,7 +55,6 @@ type State = {
   mousePos: Point | null;
   playerColor: Color;
   moves: Array<Move | "O-O" | "O-O-O">;
-  playing: boolean;
   opponent: string;
 };
 
@@ -74,8 +73,7 @@ export const state: State = {
   mousePos: null,
   playerColor: "b",
   moves: [],
-  playing: false,
-  opponent: "glowfish",
+  opponent: "gf",
 };
 
 export const globals: Globals = {

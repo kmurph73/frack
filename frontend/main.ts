@@ -4,7 +4,7 @@ import { buildCanvas } from "./buildCanvas.js";
 import { drawBoard, drawLastMove } from "./drawBoard.js";
 import { drawPieces } from "./drawPieces.js";
 import { globals, state } from "./globals.js";
-import { Chess } from "./lib/chess.js";
+import { Chess } from "chess.js";
 import { generateRandomBigInt } from "./lib/randomBigInt.js";
 import { attemptComputerMove } from "./attemptComputerMove.js";
 import { dom } from "./domElements.js";

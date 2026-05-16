@@ -1,4 +1,4 @@
-import { Color, Piece, PieceSymbol } from "./lib/chess.js";
+import { Color, Piece, PieceSymbol } from "chess.js";
 import { Rect } from "./types";
 
 let x = 675;
