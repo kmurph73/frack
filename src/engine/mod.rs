@@ -7,7 +7,12 @@ mod eval;
 
 type History = Vec<u64, 150>;
 
-pub fn best_move(game: &ChessGame, random: u64, history: &History) -> (Option<Move>, i16) {
+pub fn best_move(
+    game: &ChessGame,
+    random: u64,
+    history: &History,
+    depth: u8,
+) -> (Option<Move>, i16) {
     let moves = book_entry(game.board());
     if !moves.is_empty() {
         let mv: Option<Move> = Some(moves[(random % moves.len() as u64) as usize]);
@@ -16,7 +21,7 @@ pub fn best_move(game: &ChessGame, random: u64, history: &History) -> (Option<Mo
 
     let mut history = History::from_slice(history).unwrap();
     history.pop();
-    return search(&mut history, game.board(), 2, 0, -15_000, 15_000);
+    return search(&mut history, game.board(), depth, 0, -15_000, 15_000);
 }
 
 fn search(

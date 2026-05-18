@@ -25,13 +25,18 @@ export const attemptComputerMove = (): Move | null => {
   }
 
   if (/^sf/.test(state.opponent)) {
-    goFish();
-    return null;
+    const ws = globals.websocket;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      goFish();
+      return null;
+    }
+    // Backend unavailable: fall through to the wasm engine.
   }
 
   const rng = globals.rng!;
 
-  const mv = get_move(rng, game.fen());
+  const depth = state.opponent === "gfw" ? 1 : state.opponent === "gfs" ? 3 : 2;
+  const mv = get_move(rng, game.fen(), depth);
 
   if (!mv.includes(",")) {
     return null;

@@ -62,6 +62,11 @@ const mouseup = (e: MouseEvent) => {
   const rng = globals.rng!;
 
   const square = squareFromPos(chessPos);
+  if (square === state.selectedSquare) {
+    state.selectedSquare = null;
+    render();
+    return;
+  }
   const piece = game.get(state.selectedSquare);
   if (!piece) {
     return;
@@ -87,15 +92,6 @@ const mouseup = (e: MouseEvent) => {
   if (mv) {
     state.moves.push(mv);
     saveState();
-
-    const result = attemptComputerMove();
-    if (result) {
-      setTimeout(() => {
-        if (game.isCheckmate()) {
-          alert("GG");
-        }
-      }, 100);
-    }
   }
 
   state.selectedSquare = null;
@@ -143,6 +139,12 @@ export const attachEvents = () => {
   msgbox.addEventListener("click", clickBox);
 
   const selectOppo = document.getElementById("oppo") as HTMLSelectElement;
+  if (!__HAS_BACKEND__) {
+    for (const opt of Array.from(selectOppo.options)) {
+      if (opt.value.startsWith("sf")) opt.remove();
+    }
+    if (state.opponent.startsWith("sf")) state.opponent = "gf";
+  }
   selectOppo.addEventListener("change", (e) => {
     state.opponent = selectOppo.value;
     saveState();
@@ -167,9 +169,13 @@ export const attachEvents = () => {
   });
 
   const fishBtn = document.getElementById("fish") as HTMLButtonElement;
-  fishBtn.addEventListener("click", () => {
-    goFish();
-  });
+  if (__HAS_BACKEND__) {
+    fishBtn.addEventListener("click", () => {
+      goFish();
+    });
+  } else {
+    fishBtn.remove();
+  }
 
   const newBtn = document.getElementById("new") as HTMLButtonElement;
   newBtn.addEventListener("click", () => {
@@ -200,8 +206,15 @@ export const attachEvents = () => {
 
   const nextBtn = document.getElementById("next") as HTMLButtonElement;
   nextBtn.addEventListener("click", () => {
-    attemptComputerMove();
+    const result = attemptComputerMove();
     saveState();
     render();
+    if (result) {
+      setTimeout(() => {
+        if (globals.game!.isCheckmate()) {
+          alert("GG");
+        }
+      }, 100);
+    }
   });
 };

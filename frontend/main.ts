@@ -28,7 +28,9 @@ const pgn = `1. Nf3 d5 2. g3 c5 3. d4 Qa5+ 4. Nbd2 e6 5. a3 c4 6. Ne5 f6 7. b4 Q
 const main = async () => {
   await init();
 
-  startWebSocket();
+  if (__HAS_BACKEND__) {
+    startWebSocket();
+  }
 
   const file = await fetch("pgns.txt");
   const txt = await file.text();
@@ -74,7 +76,7 @@ const main = async () => {
     drawPieces(imgAtlas, chess);
   };
 
-  imgAtlas.src = "/chesspieces.png";
+  imgAtlas.src = "chesspieces.png";
 };
 
 window.main = main;

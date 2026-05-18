@@ -19,11 +19,12 @@ pub fn get_rng() -> u64 {
 }
 
 #[wasm_bindgen]
-pub fn get_move(n: u64, fen: &str) -> String {
+pub fn get_move(n: u64, fen: &str, depth: u8) -> String {
     let mut rng = Rng::new_with(n.into());
     let game = ChessGame::from_fen(fen);
     let vec = heapless::Vec::new();
-    let result: (Option<cozy_chess::Move>, i16) = engine::best_move(&game, rng.next(), &vec);
+    let result: (Option<cozy_chess::Move>, i16) =
+        engine::best_move(&game, rng.next(), &vec, depth);
     let str: String = match result.0 {
         Some(mv) => format!("{},{}", mv.from, mv.to),
         None => format!("{}", result.1),

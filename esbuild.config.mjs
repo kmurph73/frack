@@ -4,14 +4,16 @@ import { spawn } from "node:child_process";
 
 const watch = process.argv.includes("--watch");
 
-// Keep the wasm-pack glue at /pkg/frack.js so its `new URL('frack_bg.wasm',
-// import.meta.url)` keeps resolving alongside the wasm. The dev backend
-// already serves both files from /pkg/.
+// Keep the wasm-pack glue out of the bundle so its `new URL('frack_bg.wasm',
+// import.meta.url)` keeps resolving alongside the wasm. The path is relative
+// from the bundle (dist/frontend/main.js) so it works under both `/` and a
+// project-page prefix like `/frack/`. The dev backend serves any *.wasm and
+// frack.js out of /pkg/ regardless of request path.
 const externalWasmPackPlugin = {
   name: "external-wasm-pack",
   setup(build) {
     build.onResolve({ filter: /(^|\/)pkg\/frack\.js$/ }, () => ({
-      path: "/pkg/frack.js",
+      path: "../../pkg/frack.js",
       external: true,
     }));
   },
@@ -26,6 +28,7 @@ const frontend = {
   target: "esnext",
   sourcemap: true,
   plugins: [externalWasmPackPlugin],
+  define: { __HAS_BACKEND__: "true" },
   logLevel: "info",
 };
 

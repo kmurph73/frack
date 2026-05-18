@@ -33,7 +33,18 @@ const parseSf = (msg: string) => {
 };
 
 export const startWebSocket = () => {
-  const ws = new WebSocket(`ws://${location.host}`);
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  let ws: WebSocket;
+  try {
+    ws = new WebSocket(`${proto}//${location.host}`);
+  } catch {
+    return;
+  }
+
+  ws.onerror = () => {
+    // No backend reachable (e.g. static deploy). sf* opponents will fall back
+    // to the wasm engine in attemptComputerMove / goFish.
+  };
 
   ws.onmessage = function (event) {
     const data = JSON.parse(event.data);
