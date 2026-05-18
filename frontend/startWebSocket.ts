@@ -47,7 +47,16 @@ export const startWebSocket = () => {
   };
 
   ws.onmessage = function (event) {
-    const data = JSON.parse(event.data);
+    let data: { msg?: unknown };
+    try {
+      data = JSON.parse(event.data);
+    } catch (err) {
+      console.warn("ws: bad JSON frame", err, event.data);
+      return;
+    }
+    if (typeof data.msg !== "string") {
+      return;
+    }
 
     const messages = data.msg.split("\n");
     for (let index = 0; index < messages.length; index++) {

@@ -8,6 +8,7 @@ import {
 } from "./globals.js";
 import { Color, Square } from "chess.js";
 import { render } from "./main.js";
+import { saveState } from "./localStorage.js";
 import { ChessFile, FileAndRank, Point } from "./types";
 
 export const flipRank = (rank: number) => {
@@ -130,9 +131,17 @@ export const getStockfishConf = () => {
 export const attemptMove = (move: string) => {
   const from = move.slice(0, 2);
   const to = move.slice(2, 4);
-  const result = globals.game!.move({ to, from });
-  if (result) {
-    state.moves.push(result);
-    render();
+  const promotion = move.length >= 5 ? move[4] : undefined;
+  const result = globals.game!.move(
+    promotion ? { from, to, promotion } : { from, to }
+  );
+  if (!result) {
+    return;
+  }
+  state.moves.push(result);
+  saveState();
+  render();
+  if (globals.game!.isCheckmate()) {
+    setTimeout(() => alert("GG"), 100);
   }
 };

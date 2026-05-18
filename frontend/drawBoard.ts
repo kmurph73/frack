@@ -77,7 +77,7 @@ export const drawLastMove = () => {
     file: file as ChessFile,
   });
 
-  drawSquare(pos, opaqueNeonGreenStr);
+  drawSquare(pos, squareColor);
 };
 
 export const drawBoard = () => {

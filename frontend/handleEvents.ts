@@ -223,6 +223,7 @@ export const attachEvents = () => {
     const mv = globals.game!.undo();
     if (mv) {
       state.moves.pop();
+      saveState();
       render();
     } else {
       alert("couldnt undo");
@@ -252,6 +253,16 @@ export const attachEvents = () => {
   playasBtn.addEventListener("click", () => {
     state.playerColor = state.playerColor === "b" ? "w" : "b";
     refreshPlayasText();
+    saveState();
+    render();
+    if (globals.game!.turn() !== state.playerColor) {
+      const result = attemptComputerMove();
+      saveState();
+      render();
+      if (result && globals.game!.isCheckmate()) {
+        setTimeout(() => alert("GG"), 100);
+      }
+    }
   });
 
   const newGameBtn = document.getElementById("newgame") as HTMLButtonElement;

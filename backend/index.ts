@@ -1,86 +1,55 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { WebSocketServer } from "ws";
-import cp from "node:child_process";
-import { EOL } from "node:os";
+import { spawn } from "node:child_process";
 
-// // let cnt = 1;
-// proc.stdout.on("data", function (data) {
-//   process.stdout.write(data);
-// });
-// proc.stderr.on("data", function (data) {
-//   process.stderr.write(data);
-// });
-// proc.on("close", function (code, signal) {
-//   console.log("tf");
-// });
-
-// proc.stdin.write(cmd, (err) => {
-//   console.log(err);
-// });
-
-//create a server object:
 const cwd = process.cwd();
-const server = http.createServer(async function (req, res) {
-  if (req.url === "/ws") {
-    console.log("ws");
+
+const contentTypes: Record<string, string> = {
+  ".html": "text/html; charset=UTF-8",
+  ".js": "application/javascript",
+  ".map": "application/json",
+  ".wasm": "application/wasm",
+  ".ts": "text/plain; charset=UTF-8",
+  ".css": "text/css",
+  ".png": "image/png",
+};
+
+function resolveAsset(reqUrl: string): string | null {
+  if (reqUrl === "/") return path.join(cwd, "index.html");
+  if (reqUrl.endsWith("frack.js")) return path.join(cwd, "pkg/frack.js");
+  if (reqUrl.endsWith(".wasm")) {
+    return path.join(cwd, "pkg", path.basename(reqUrl));
+  }
+
+  const resolved = path.resolve(cwd, "." + reqUrl);
+  if (!resolved.startsWith(cwd + path.sep) && resolved !== cwd) {
+    return null;
+  }
+  return resolved;
+}
+
+const server = http.createServer(async (req, res) => {
+  if (req.url == null) {
+    res.statusCode = 400;
+    res.end();
     return;
   }
 
-  if (req.url == null) {
-    res.write("tf bruv"); //write a response to the client
-    res.end(); //end the response
+  const filePath = resolveAsset(req.url);
+  if (filePath == null) {
+    res.statusCode = 403;
+    res.end();
     return;
   }
 
   try {
-    if (req.url === "/") {
-      const txt = await readFile("index.html", "utf-8");
-      res.setHeader("Content-Type", "text/html; charset=UTF-8");
-      res.write(txt);
-      res.end();
-    } else if (/frack\.js$/.test(req.url)) {
-      const js = await readFile(cwd + "/pkg/frack.js", "utf-8");
-      res.setHeader("Content-Type", "application/javascript");
-      res.write(js);
-      res.end();
-    } else if (/\.js$/.test(req.url)) {
-      const js = await readFile(cwd + req.url, "utf-8");
-      res.setHeader("Content-Type", "application/javascript");
-      res.write(js);
-      res.end();
-    } else if (/\.map$/.test(req.url)) {
-      const json = await readFile(cwd + req.url, "utf-8");
-      res.setHeader("Content-Type", "application/json");
-      res.write(json);
-      res.end();
-    } else if (/\.wasm$/.test(req.url)) {
-      const filename = req.url.split("/").at(-1);
-      const wasm = await readFile(cwd + "/pkg/" + filename);
-      res.setHeader("Content-Type", "application/wasm");
-      res.write(wasm);
-      res.end();
-    } else if (/\.ts$/.test(req.url)) {
-      const ts = await readFile(cwd + req.url, "utf-8");
-      // res.setHeader("Content-Type", "application/json");
-      res.write(ts);
-      res.end();
-    } else if (/\.css$/.test(req.url)) {
-      const css = await readFile(cwd + req.url, "utf-8");
-      res.setHeader("Content-Type", "text/css");
-      res.write(css);
-      res.end();
-    } else if (/\.png$/.test(req.url)) {
-      const png = await readFile(cwd + req.url);
-      res.setHeader("Content-Type", "image/png");
-      res.write(png);
-      res.end();
-    } else {
-      const txt = await readFile(cwd + req.url, "utf-8");
-      res.setHeader("Content-Type", "text/plain; charset=UTF-8");
-      res.write(txt);
-      res.end();
-    }
+    const ext = path.extname(filePath);
+    const type = contentTypes[ext] ?? "text/plain; charset=UTF-8";
+    const body = await readFile(filePath);
+    res.setHeader("Content-Type", type);
+    res.end(body);
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") {
       res.statusCode = 404;
@@ -93,60 +62,52 @@ const server = http.createServer(async function (req, res) {
   }
 });
 
-let spawn = cp.spawn;
-let stockfish: cp.ChildProcessWithoutNullStreams | null = null;
-
-// const cmd = `position startpos move e2e4${EOL}go movetime 3000${EOL}`;
-
 const wss = new WebSocketServer({ server });
 
-wss.on("connection", function (ws) {
+wss.on("connection", (ws) => {
   console.log("connected");
-  stockfish = spawn("/Users/kmurph/code/Stockfish/src/stockfish");
+  const stockfish = spawn("/Users/kmurph/code/Stockfish/src/stockfish");
 
-  stockfish.stdout.on("data", function (data) {
-    const msg = data.toString();
-    const json = JSON.stringify({ msg });
-    ws.send(json);
+  stockfish.stdout.on("data", (data) => {
+    ws.send(JSON.stringify({ msg: data.toString() }));
   });
 
   stockfish.stderr.on("data", (data) => {
-    console.log(data);
+    console.log(data.toString());
   });
 
-  const json = { msg: "stockfish connected" };
-  ws.send(JSON.stringify(json));
+  ws.send(JSON.stringify({ msg: "stockfish connected" }));
 
   ws.onmessage = (event) => {
-    const json = JSON.parse(event.data as string) as {
-      fen: string | undefined;
-      skill: number | undefined;
-      depth: number | undefined;
-      automove: boolean;
+    let json: {
+      fen?: string;
+      skill?: number;
+      depth?: number;
+      automove?: boolean;
     };
-
-    if (json.fen) {
-      let cmd = "";
-      if (json.skill) {
-        cmd += `setoption name Skill Level value ${json.skill}${EOL}`;
-        stockfish!.stdin.write(cmd);
-      }
-
-      cmd += `position fen ${json.fen}${EOL}`;
-      if (json.depth) {
-        cmd += `go depth ${json.depth}${EOL}`;
-      } else {
-        cmd += `go movetime 3000${EOL}`;
-      }
-
-      stockfish!.stdin.write(cmd);
+    try {
+      json = JSON.parse(event.data as string);
+    } catch {
+      return;
     }
-    // console.log(event.data);
+
+    if (!json.fen) return;
+
+    let cmd = "";
+    if (json.skill) {
+      cmd += `setoption name Skill Level value ${json.skill}\n`;
+    }
+    cmd += `position fen ${json.fen}\n`;
+    cmd += json.depth ? `go depth ${json.depth}\n` : `go movetime 3000\n`;
+
+    stockfish.stdin.write(cmd);
   };
 
-  ws.on("close", function () {});
+  ws.on("close", () => {
+    stockfish.kill();
+  });
 });
 
-server.listen(8080, function () {
+server.listen(8080, () => {
   console.log("Listening on http://localhost:8080");
 });

@@ -80,5 +80,3 @@ const main = async () => {
 };
 
 window.main = main;
-
-await init();
