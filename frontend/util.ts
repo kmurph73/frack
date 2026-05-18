@@ -1,6 +1,7 @@
 import {
   alphabet,
   globals,
+  sizePx,
   skillLevels,
   squareSize,
   state,
@@ -13,8 +14,8 @@ export const flipRank = (rank: number) => {
   return Math.abs(8 - rank);
 };
 
-export const isWithinCanvas = (e: MouseEvent): boolean => {
-  return (e.composedPath()[0] as HTMLElement).nodeName === "CANVAS";
+export const isWithinCanvas = (e: Event): boolean => {
+  return (e.composedPath()[0] as HTMLElement)?.nodeName === "CANVAS";
 };
 
 /**
@@ -32,11 +33,14 @@ export const then = <A, B>(a: A, cb: (a: A) => B): B => {
 // https://stackoverflow.com/a/18053642/548170
 export function getCursorPosition(
   canvas: HTMLCanvasElement,
-  event: MouseEvent
+  clientX: number,
+  clientY: number
 ) {
   const rect = canvas.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
+  const scaleX = sizePx / rect.width;
+  const scaleY = sizePx / rect.height;
+  const x = (clientX - rect.left) * scaleX;
+  const y = (clientY - rect.top) * scaleY;
 
   return { x, y };
 }

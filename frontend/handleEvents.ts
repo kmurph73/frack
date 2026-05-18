@@ -16,12 +16,8 @@ import {
   attemptMove,
 } from "./util.js";
 
-const mousedown = (e: MouseEvent) => {
-  if (!isWithinCanvas(e)) {
-    return;
-  }
-
-  const pos = getCursorPosition(dom.canvas!, e);
+const pointerDown = (clientX: number, clientY: number) => {
+  const pos = getCursorPosition(dom.canvas!, clientX, clientY);
   const chessPos = chessPosFromPoint(pos);
   if (!chessPos) {
     return;
@@ -29,8 +25,7 @@ const mousedown = (e: MouseEvent) => {
 
   state.mousedown = true;
   state.mousePos = pos;
-  const square = squareFromPos(chessPos);
-  state.selectedSquare = square;
+  state.selectedSquare = squareFromPos(chessPos);
   render();
 };
 
@@ -47,19 +42,21 @@ const isPromotionAttempt = (
 
 const promotions = ["q", "n", "b", "r"] as const;
 
-const mouseup = (e: MouseEvent) => {
+const pointerUp = (clientX: number, clientY: number) => {
   if (!state.selectedSquare) {
     return;
   }
 
-  const pos = getCursorPosition(dom.canvas!, e);
+  const pos = getCursorPosition(dom.canvas!, clientX, clientY);
   const chessPos = chessPosFromPoint(pos);
+  state.mousedown = false;
   if (!chessPos) {
+    state.selectedSquare = null;
+    render();
     return;
   }
 
   const game = globals.game!;
-  const rng = globals.rng!;
 
   const square = squareFromPos(chessPos);
   if (square === state.selectedSquare) {
@@ -69,6 +66,8 @@ const mouseup = (e: MouseEvent) => {
   }
   const piece = game.get(state.selectedSquare);
   if (!piece) {
+    state.selectedSquare = null;
+    render();
     return;
   }
   const promote = isPromotionAttempt(piece, chessPos);
@@ -98,14 +97,71 @@ const mouseup = (e: MouseEvent) => {
   render();
 };
 
+const pointerMove = (clientX: number, clientY: number) => {
+  if (state.selectedSquare && state.mousedown) {
+    state.mousePos = getCursorPosition(dom.canvas!, clientX, clientY);
+    render();
+  }
+};
+
+const mousedown = (e: MouseEvent) => {
+  if (!isWithinCanvas(e)) {
+    return;
+  }
+  pointerDown(e.clientX, e.clientY);
+};
+
+const mouseup = (e: MouseEvent) => {
+  pointerUp(e.clientX, e.clientY);
+};
+
 const mousemove = (e: MouseEvent) => {
   if (!isWithinCanvas(e)) {
     return;
   }
+  pointerMove(e.clientX, e.clientY);
+};
 
-  if (state.selectedSquare && state.mousedown) {
-    const pos = getCursorPosition(dom.canvas!, e);
-    state.mousePos = pos;
+const touchstart = (e: TouchEvent) => {
+  if (!isWithinCanvas(e)) {
+    return;
+  }
+  const touch = e.touches[0];
+  if (!touch) {
+    return;
+  }
+  e.preventDefault();
+  pointerDown(touch.clientX, touch.clientY);
+};
+
+const touchmove = (e: TouchEvent) => {
+  if (!state.selectedSquare || !state.mousedown) {
+    return;
+  }
+  const touch = e.touches[0];
+  if (!touch) {
+    return;
+  }
+  e.preventDefault();
+  pointerMove(touch.clientX, touch.clientY);
+};
+
+const touchend = (e: TouchEvent) => {
+  if (!state.selectedSquare) {
+    return;
+  }
+  const touch = e.changedTouches[0];
+  if (!touch) {
+    return;
+  }
+  e.preventDefault();
+  pointerUp(touch.clientX, touch.clientY);
+};
+
+const touchcancel = () => {
+  if (state.selectedSquare || state.mousedown) {
+    state.selectedSquare = null;
+    state.mousedown = false;
     render();
   }
 };
@@ -134,6 +190,11 @@ export const attachEvents = () => {
   document.body.addEventListener("mousedown", mousedown);
   document.body.addEventListener("mouseup", mouseup);
   document.body.addEventListener("mousemove", mousemove);
+
+  document.body.addEventListener("touchstart", touchstart, { passive: false });
+  document.body.addEventListener("touchmove", touchmove, { passive: false });
+  document.body.addEventListener("touchend", touchend, { passive: false });
+  document.body.addEventListener("touchcancel", touchcancel);
 
   const msgbox = document.getElementById("msgbox") as HTMLDivElement;
   msgbox.addEventListener("click", clickBox);
