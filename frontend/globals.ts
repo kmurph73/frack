@@ -3,7 +3,6 @@ import { Point } from "./types";
 
 declare global {
   interface Window {
-    main: () => void;
     yar: boolean;
     App: {
       state: State;
@@ -56,6 +55,7 @@ type State = {
   playerColor: Color;
   moves: Array<Move | "O-O" | "O-O-O">;
   opponent: string;
+  autoplay: boolean;
 };
 
 type Globals = {
@@ -74,6 +74,7 @@ export const state: State = {
   playerColor: "b",
   moves: [],
   opponent: "gf",
+  autoplay: false,
 };
 
 export const globals: Globals = {

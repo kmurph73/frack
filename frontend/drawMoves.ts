@@ -1,5 +1,5 @@
 import { dom } from "./domElements.js";
-import { globals } from "./globals.js";
+import { globals, state } from "./globals.js";
 
 export const drawMoves = () => {
   const g = globals.game!;
@@ -24,5 +24,8 @@ export const drawMoves = () => {
 
   dom.turns!.innerHTML = html.join("");
   const color = g.turn() === "b" ? "black" : "white";
-  dom.info!.innerHTML = `<span class="${color}">${color}'s turn</span>`;
+  const playerColor = state.playerColor === "b" ? "black" : "white";
+  dom.info!.innerHTML =
+    `<div><span class="${playerColor}">playing as ${playerColor}</span></div>` +
+    `<div><span class="${color}">${color}'s turn</span></div>`;
 };

@@ -79,4 +79,4 @@ const main = async () => {
   imgAtlas.src = "chesspieces.png";
 };
 
-window.main = main;
+main();

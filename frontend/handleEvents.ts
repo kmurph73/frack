@@ -91,6 +91,17 @@ const pointerUp = (clientX: number, clientY: number) => {
   if (mv) {
     state.moves.push(mv);
     saveState();
+
+    if (state.autoplay && game.turn() !== state.playerColor) {
+      const result = attemptComputerMove();
+      saveState();
+      state.selectedSquare = null;
+      render();
+      if (result && game.isCheckmate()) {
+        setTimeout(() => alert("GG"), 100);
+      }
+      return;
+    }
   }
 
   state.selectedSquare = null;
@@ -182,6 +193,7 @@ const clickBox = (e: MouseEvent) => {
 const newGame = () => {
   state.moves = [];
   globals.game!.reset();
+  state.flipped = state.playerColor === "b";
   saveState();
   render();
 };
@@ -211,6 +223,13 @@ export const attachEvents = () => {
     saveState();
   });
   selectOppo.value = state.opponent;
+
+  const autoplayChk = document.getElementById("autoplay") as HTMLInputElement;
+  autoplayChk.checked = state.autoplay;
+  autoplayChk.addEventListener("change", () => {
+    state.autoplay = autoplayChk.checked;
+    saveState();
+  });
 
   const flipBtn = document.getElementById("flip") as HTMLButtonElement;
   flipBtn.addEventListener("click", () => {
@@ -270,6 +289,7 @@ export const attachEvents = () => {
     globals.game!.reset();
     state.moves = [];
     state.playerColor = Math.random() < 0.5 ? "w" : "b";
+    state.flipped = state.playerColor === "b";
     globals.rng = generateRandomBigInt(1n, get_rng());
     refreshPlayasText();
     saveState();

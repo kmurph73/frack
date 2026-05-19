@@ -36,7 +36,8 @@ export const attemptComputerMove = (): Move | null => {
   const rng = globals.rng!;
 
   const depth = state.opponent === "gfw" ? 1 : state.opponent === "gfs" ? 3 : 2;
-  const mv = get_move(rng, game.fen(), depth);
+  const strong = state.opponent === "gfs";
+  const mv = get_move(rng, game.fen(), depth, strong);
 
   if (!mv.includes(",")) {
     return null;
