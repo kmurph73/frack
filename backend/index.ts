@@ -14,6 +14,7 @@ const contentTypes: Record<string, string> = {
   ".ts": "text/plain; charset=UTF-8",
   ".css": "text/css",
   ".png": "image/png",
+  ".ico": "image/x-icon",
 };
 
 function resolveAsset(reqUrl: string): string | null {

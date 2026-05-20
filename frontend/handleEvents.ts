@@ -14,6 +14,7 @@ import {
   squareFromPos,
   isWithinCanvas,
   attemptMove,
+  safeMove,
 } from "./util.js";
 
 const pointerDown = (clientX: number, clientY: number) => {
@@ -78,14 +79,10 @@ const pointerUp = (clientX: number, clientY: number) => {
     const choice = prompt(`promote ${promotions.join(", ")}`);
 
     if (choice && promotions.includes(choice as any)) {
-      mv = game.move({
-        from: state.selectedSquare,
-        to: square,
-        promotion: choice,
-      });
+      mv = safeMove(game, state.selectedSquare, square, choice);
     }
   } else {
-    mv = game.move({ from: state.selectedSquare, to: square });
+    mv = safeMove(game, state.selectedSquare, square);
   }
 
   if (mv) {

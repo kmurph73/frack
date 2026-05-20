@@ -8,6 +8,8 @@ declare global {
       state: State;
       globals: Globals;
       moves: string[];
+      export: () => string;
+      import: (json: string) => void;
     };
   }
 }

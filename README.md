@@ -23,6 +23,29 @@ A browser chess app that plays against either a Rust/WASM engine ("glowfish") or
 
 `state.opponent` is `"gf"` (glowfish/WASM) or `"sf1"`..`"sf8"` (Stockfish difficulty). Dispatch happens in `frontend/attemptComputerMove.ts`; the skill-level table lives in `frontend/globals.ts`.
 
+## Exporting game state for repro
+
+`window.App.export()` returns a JSON snapshot (PGN, playerColor, flipped, opponent, autoplay, moves, rng seed). `window.App.import(json)` restores it, overwrites localStorage, and re-renders.
+
+In prod, when the bug is on screen:
+
+```js
+copy(App.export())
+```
+
+In dev, paste it back:
+
+```js
+App.import('<paste>')
+```
+
+Because the engine reads `globals.rng` without mutating it, dev's next engine move matches prod's — that's what makes the bug reproducible.
+
+Caveats:
+
+- The "newgame" button reseeds `globals.rng` via `Math.random`. Don't click it after importing.
+- If pasting into the console mangles quotes, wrap with backticks: `` App.import(`...`) ``.
+
 ## External dependencies
 
 The backend spawns `/Users/kmurph/code/Stockfish/src/stockfish` per WebSocket connection — this path is hardcoded in `backend/index.ts`. If the binary isn't there, the `sf*` opponents fail silently. Run `./compfish.sh` to build it.

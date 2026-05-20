@@ -10,10 +10,19 @@ import { attemptComputerMove } from "./attemptComputerMove.js";
 import { dom } from "./domElements.js";
 import { drawMoves } from "./drawMoves.js";
 import { startWebSocket } from "./startWebSocket.js";
-import { loadState } from "./localStorage.js";
+import { exportSnapshot, importSnapshot, loadState } from "./localStorage.js";
 
 const moves: string[] = [];
-window.App = { state, globals, moves };
+window.App = {
+  state,
+  globals,
+  moves,
+  export: exportSnapshot,
+  import: (json: string) => {
+    importSnapshot(json);
+    render();
+  },
+};
 
 export const render = () => {
   const g = globals.game!;

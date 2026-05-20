@@ -128,13 +128,47 @@ export const getStockfishConf = () => {
   return null;
 };
 
+// chess.js accepts castling as e1→g1 / "O-O", but not as king-onto-rook
+// (e1→h1, e1→a1). Translate that intent so dropping on the rook works.
+export const checkIfCastling = (
+  { from, to }: { from: string; to: string },
+  color: "w" | "b"
+): "O-O" | "O-O-O" | null => {
+  if (color === "w" && from === "e1") {
+    return to === "a1" ? "O-O-O" : to === "h1" ? "O-O" : null;
+  } else if (color === "b" && from === "e8") {
+    return to === "a8" ? "O-O-O" : to === "h8" ? "O-O" : null;
+  }
+
+  return null;
+};
+
+export const safeMove = (
+  game: import("chess.js").Chess,
+  from: Square,
+  to: Square,
+  promotion?: string
+) => {
+  const castle = checkIfCastling({ from, to }, game.turn());
+  if (castle) {
+    try {
+      return game.move(castle);
+    } catch {
+      return null;
+    }
+  }
+  try {
+    return game.move(promotion ? { from, to, promotion } : { from, to });
+  } catch {
+    return null;
+  }
+};
+
 export const attemptMove = (move: string) => {
-  const from = move.slice(0, 2);
-  const to = move.slice(2, 4);
+  const from = move.slice(0, 2) as Square;
+  const to = move.slice(2, 4) as Square;
   const promotion = move.length >= 5 ? move[4] : undefined;
-  const result = globals.game!.move(
-    promotion ? { from, to, promotion } : { from, to }
-  );
+  const result = safeMove(globals.game!, from, to, promotion);
   if (!result) {
     return;
   }

@@ -1,22 +1,9 @@
 import { get_move } from "../pkg/frack.js";
 import { globals, isPlayerTurn, state } from "./globals.js";
-import { Move } from "chess.js";
+import { Move, Square } from "chess.js";
 import { saveState } from "./localStorage.js";
 import { goFish } from "./stockfish.js";
-
-// e1,a1
-const checkIfCastling = (
-  { from, to }: { from: string; to: string },
-  color: "w" | "b"
-) => {
-  if (color === "w" && from === "e1") {
-    return to === "a1" ? "O-O-O" : to === "h1" ? "O-O" : null;
-  } else if (color === "b" && from === "e8") {
-    return to === "a8" ? "O-O-O" : to === "h8" ? "O-O" : null;
-  }
-
-  return null;
-};
+import { safeMove } from "./util.js";
 
 export const attemptComputerMove = (): Move | null => {
   const game = globals.game!;
@@ -43,23 +30,15 @@ export const attemptComputerMove = (): Move | null => {
     return null;
   }
 
-  const [from, to] = mv.split(",");
+  const [from, to] = mv.split(",") as [Square, Square];
 
-  let move = game.move({ from, to });
+  const move = safeMove(game, from, to);
   if (move != null) {
     state.moves.push(move);
+    saveState();
     return move;
   }
 
-  const castle = checkIfCastling({ from, to }, game.turn());
-  if (castle) {
-    const result = game.move(castle);
-    if (result) {
-      state.moves.push(result);
-    }
-  }
-
   saveState();
-
   return null;
 };
