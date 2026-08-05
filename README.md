@@ -1,8 +1,8 @@
-https://kmurph73.github.io/frack/
-
 # frack
 
 A browser chess app that plays against either a Rust/WASM engine ("glowfish") or a real Stockfish process running on the backend.
+
+https://kmurph73.github.io/frack/
 
 ## Stack
 
