@@ -37,6 +37,12 @@ export const neonGreen: Rgba = { r: 0, g: 250, b: 50 };
 export const opaqueNeonGreen: Rgba = { ...neonGreen, a: 0.5 };
 export const neonGreenStr = rgbToString(neonGreen);
 export const opaqueNeonGreenStr = rgbToString(opaqueNeonGreen);
+export const captureRed: Rgba = { r: 190, g: 30, b: 30, a: 0.85 };
+export const captureRedStr = rgbToString(captureRed);
+// backdrop for the captured-piece badge — mid-tone so both the black and the
+// white sprite (each outlined in the opposite color) stay legible on it
+export const captureBadge: Rgba = { ...lichessTan, a: 0.95 };
+export const captureBadgeStr = rgbToString(captureBadge);
 
 export const skillLevels: Record<string, { level: number; depth: number }> = {
   sf1: { level: -9, depth: 5 },

@@ -1,7 +1,7 @@
 import init, { get_rng } from "../pkg/frack.js";
 import { attachEvents } from "./handleEvents.js";
 import { buildCanvas } from "./buildCanvas.js";
-import { drawBoard, drawLastMove } from "./drawBoard.js";
+import { drawBoard, drawCapturedPiece, drawLastMove } from "./drawBoard.js";
 import { drawPieces } from "./drawPieces.js";
 import { globals, state } from "./globals.js";
 import { Chess } from "chess.js";
@@ -29,6 +29,7 @@ export const render = () => {
   drawBoard();
   drawLastMove();
   drawPieces(globals.atlas!, g);
+  drawCapturedPiece(globals.atlas!);
   drawMoves();
 };
 
@@ -82,7 +83,7 @@ const main = async () => {
   attachEvents();
 
   imgAtlas.onload = () => {
-    drawPieces(imgAtlas, chess);
+    render();
   };
 
   imgAtlas.src = "chesspieces.png";

@@ -1,6 +1,8 @@
 import { dom } from "./domElements.js";
 import {
   alphabet,
+  captureBadgeStr,
+  captureRedStr,
   darkColor,
   globals,
   lightColor,
@@ -11,9 +13,10 @@ import {
   squareSize,
   state,
 } from "./globals.js";
-import { Color, Square } from "chess.js";
+import { Color, PieceSymbol, Square } from "chess.js";
 import { ChessFile, FileAndRank, Point } from "./types.js";
-import { fileAndRankToPos, then } from "./util.js";
+import { fileAndRankToPos, mapCompact, then } from "./util.js";
+import { getAtlasCoords } from "./getAtlasCoords.js";
 
 type Thing = {
   colorType: "dark" | "light";
@@ -44,40 +47,152 @@ const getSquareColor = ({ file, rank }: FileAndRank): Color => {
   }
 };
 
-export const drawLastMove = () => {
-  const lastMove = state.moves.at(-1);
-  if (lastMove == null || lastMove === "O-O" || lastMove === "O-O-O") {
-    return;
+const squareToPos = (square: string): Point => {
+  const [file, rankStr] = square.split("");
+
+  return fileAndRankToPos({ file: file as ChessFile, rank: parseInt(rankStr) });
+};
+
+const highlightSquare = (square: string) => {
+  const [file, rankStr] = square.split("");
+  const rank = parseInt(rankStr);
+
+  const color = getSquareColor({ file: file as ChessFile, rank });
+  const squareColor = color === "b" ? neonGreenStr : opaqueNeonGreenStr;
+
+  drawSquare(squareToPos(square), squareColor);
+};
+
+type Capture = {
+  square: string;
+  piece: PieceSymbol;
+  color: Color;
+  latest: boolean;
+};
+
+// how much the previous ply's capture is dimmed relative to the latest one
+const staleAlpha = 0.6;
+
+const getCapture = (index: number): Capture | null => {
+  const move = state.moves.at(index);
+  if (move == null || typeof move === "string" || !move.captured) {
+    return null;
   }
 
-  const { from, to } = lastMove;
-  let [file, rankStr] = from.split("");
+  const { from, to, captured, color, flags } = move;
 
-  let rank = parseInt(rankStr);
+  // en passant takes a pawn that never stood on `to` — it sat on the
+  // destination file, back on the rank the capturing pawn came from.
+  const square = flags?.includes("e") ? `${to[0]}${from[1]}` : to;
 
-  let color = getSquareColor({ file: file as ChessFile, rank });
-  let squareColor = color === "b" ? neonGreenStr : opaqueNeonGreenStr;
+  return {
+    square,
+    piece: captured,
+    color: color === "w" ? "b" : "w",
+    latest: index === -1,
+  };
+};
 
-  let pos = fileAndRankToPos({
-    rank,
-    file: file as ChessFile,
-  });
+// the last two plies, not just the last: the opponent answers instantly, so
+// marking only the last move means you never see the capture you just made
+const getRecentCaptures = (): Capture[] => mapCompact([-1, -2], getCapture);
 
-  drawSquare(pos, squareColor);
+// wedges in the four corners, so the piece standing on the square doesn't hide them
+const drawCaptureMarker = ({ square, latest }: Capture) => {
+  const ctx = dom.canvasContext!;
+  const { x, y } = squareToPos(square);
 
-  [file, rankStr] = to.split("");
+  const left = x * squareSize;
+  const top = y * squareSize;
+  const right = left + squareSize;
+  const bottom = top + squareSize;
+  const size = squareSize / 3.5;
 
-  rank = parseInt(rankStr);
+  const corners = [
+    [left, top, 1, 1],
+    [right, top, -1, 1],
+    [left, bottom, 1, -1],
+    [right, bottom, -1, -1],
+  ];
 
-  color = getSquareColor({ file: file as ChessFile, rank });
-  squareColor = color === "b" ? neonGreenStr : opaqueNeonGreenStr;
+  ctx.globalAlpha = latest ? 1 : staleAlpha;
+  ctx.fillStyle = captureRedStr;
 
-  pos = fileAndRankToPos({
-    rank,
-    file: file as ChessFile,
-  });
+  for (const [cornerX, cornerY, xDir, yDir] of corners) {
+    ctx.beginPath();
+    ctx.moveTo(cornerX, cornerY);
+    ctx.lineTo(cornerX + xDir * size, cornerY);
+    ctx.lineTo(cornerX, cornerY + yDir * size);
+    ctx.closePath();
+    ctx.fill();
+  }
 
-  drawSquare(pos, squareColor);
+  ctx.globalAlpha = 1;
+};
+
+// the piece that was taken, as a badge in the corner of the square it died on
+const drawCaptureBadge = (
+  img: HTMLImageElement,
+  { square, piece, color, latest }: Capture
+) => {
+  const ctx = dom.canvasContext!;
+  const { x, y } = squareToPos(square);
+
+  const radius = squareSize / 4.6;
+  const inset = radius + 2;
+  // latest on the right, the ply before it on the left — a recapture puts both
+  // on the same square, and opposite corners keep them from colliding
+  const centerX = latest
+    ? (x + 1) * squareSize - inset
+    : x * squareSize + inset;
+  const centerY = (y + 1) * squareSize - inset;
+
+  ctx.globalAlpha = latest ? 1 : staleAlpha;
+
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+  ctx.fillStyle = captureBadgeStr;
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = captureRedStr;
+  ctx.stroke();
+
+  const { x: sx, y: sy, w, h } = getAtlasCoords(color, piece);
+  const iconSize = radius * 1.7;
+
+  ctx.drawImage(
+    img,
+    sx,
+    sy,
+    w,
+    h,
+    centerX - iconSize / 2,
+    centerY - iconSize / 2,
+    iconSize,
+    iconSize
+  );
+
+  ctx.globalAlpha = 1;
+};
+
+// drawn after the pieces, otherwise the capturing piece covers the badge
+export const drawCapturedPiece = (img: HTMLImageElement) => {
+  for (const capture of getRecentCaptures()) {
+    drawCaptureBadge(img, capture);
+  }
+};
+
+export const drawLastMove = () => {
+  const lastMove = state.moves.at(-1);
+
+  if (lastMove != null && typeof lastMove !== "string") {
+    highlightSquare(lastMove.from);
+    highlightSquare(lastMove.to);
+  }
+
+  for (const capture of getRecentCaptures()) {
+    drawCaptureMarker(capture);
+  }
 };
 
 export const drawBoard = () => {
