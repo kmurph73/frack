@@ -1,0 +1,83 @@
+@import "util.css";
+
+body {
+  margin: 3px!important;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  background-color: rgb(122, 122, 110);
+
+}
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.num {
+  width: 25px;
+}
+
+canvas {
+	border: 1px solid black;
+	display: block;
+	max-width: 100%;
+	height: auto;
+	touch-action: none;
+}
+
+#layout {
+	margin-left: 20px;
+}
+
+.oppo-group {
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+	body {
+		margin: 0 !important;
+	}
+	#layout {
+		flex-direction: column;
+		margin-left: 0;
+	}
+	#boardcol,
+	#sidebar,
+	#canvashold {
+		width: 100%;
+		max-width: 100%;
+	}
+	#canvashold canvas {
+		width: 100% !important;
+		height: auto !important;
+		aspect-ratio: 1 / 1;
+		max-width: 100%;
+		border-width: 0;
+	}
+	#boardcol button,
+	#boardcol select {
+		font-size: 1.1rem;
+		padding: 0.6rem 0.9rem;
+		margin: 0.25rem 0.25rem 0 0;
+		min-height: 44px;
+		border-radius: 6px;
+	}
+	#boardcol > div {
+		padding: 0.25rem;
+	}
+}
+
+.white {
+  color: white;
+  width: 100px;
+}
+
+.black {
+  color: black;
+  width: 100px;
+}
